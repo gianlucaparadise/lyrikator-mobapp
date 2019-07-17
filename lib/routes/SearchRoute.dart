@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lyrikator/helpers/Secrets.dart';
 import 'package:lyrikator/models/MusicxmatchResponse.dart';
 import 'package:lyrikator/models/Track.dart';
 import 'package:lyrikator/models/TrackList.dart';
@@ -16,17 +17,32 @@ class SearchRouteState extends State<SearchRoute> {
   List<Track> trackList = [];
 
   _onSubmitted(String text) async {
-    print(text);
-    var response = await fetchTrack();
-    print(response.message.body.trackList[1].trackName);
+    var response = await fetchTrack(text);
+
+    var sortedTrackList = response.message.body.trackList;
+    sortedTrackList.sort((t1, t2) =>
+        t2.numFavourite.compareTo(t1.numFavourite));
+
     setState(() {
-      trackList = response.message.body.trackList;
+      trackList = sortedTrackList;
     });
   }
 
-  Future<MusicxmatchResponse<TrackList>> fetchTrack() async {
-    final response = await http.get(
-        'http://api.musixmatch.com/ws/1.1/track.search?apikey=4a4b52c64f9891716dd71a70e0ec913c&q_lyrics=excuse+me+while+i+kiss+the+sky');
+  Future<MusicxmatchResponse<TrackList>> fetchTrack(String text) async {
+    // TODO: Improve this code to avoid several loading of the same file
+    SecretsLoader secretLoader = SecretsLoader();
+    Secrets secrets = await secretLoader.load();
+
+    var queryParameters = {
+      'apikey': secrets.musicxmatchApiKey,
+      'q_lyrics': text,
+      's_track_rating': 'desc',
+      'page_size': '100', // 100 is the max size of a page
+    };
+
+    var uri = Uri.http(
+        'api.musixmatch.com', '/ws/1.1/track.search', queryParameters);
+    final response = await http.get(uri);
 
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON.
@@ -47,6 +63,11 @@ class SearchRouteState extends State<SearchRoute> {
             track.trackName,
             style: _biggerFont,
           ),
+          subtitle: Text(
+            'Author: ${track.artistName}\nFavorite: ${track
+                .numFavourite} Track Rating: ${track.trackRating}',
+          ),
+          isThreeLine: true,
         );
       },
     );
@@ -57,7 +78,7 @@ class SearchRouteState extends State<SearchRoute> {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text('Search'),
+          title: Text('Search Lyrics'),
         ),
         body: Column(
           children: [
@@ -67,7 +88,9 @@ class SearchRouteState extends State<SearchRoute> {
                 onSubmitted: _onSubmitted,
               ),
             ),
-            ListView(shrinkWrap: true, children: divided),
+            Expanded(
+              child: ListView(shrinkWrap: true, children: divided),
+            )
           ],
         ));
   }
