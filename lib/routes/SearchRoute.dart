@@ -16,12 +16,19 @@ class SearchRouteState extends State<SearchRoute> {
   final _biggerFont = const TextStyle(fontSize: 18.0);
   List<Track> trackList = [];
 
+  final _searchEditController = TextEditingController();
+
+  _onSearchPress() {
+    var query = _searchEditController.text;
+    _onSubmitted(query);
+  }
+
   _onSubmitted(String text) async {
     var response = await fetchTrack(text);
 
     var sortedTrackList = response.message.body.trackList;
-    sortedTrackList.sort((t1, t2) =>
-        t2.numFavourite.compareTo(t1.numFavourite));
+    sortedTrackList
+        .sort((t1, t2) => t2.numFavourite.compareTo(t1.numFavourite));
 
     setState(() {
       trackList = sortedTrackList;
@@ -40,8 +47,8 @@ class SearchRouteState extends State<SearchRoute> {
       'page_size': '100', // 100 is the max size of a page
     };
 
-    var uri = Uri.http(
-        'api.musixmatch.com', '/ws/1.1/track.search', queryParameters);
+    var uri =
+    Uri.http('api.musixmatch.com', '/ws/1.1/track.search', queryParameters);
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
@@ -82,11 +89,23 @@ class SearchRouteState extends State<SearchRoute> {
         ),
         body: Column(
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              child: TextField(
-                onSubmitted: _onSubmitted,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    child: TextField(
+                      onSubmitted: _onSubmitted,
+                      controller: _searchEditController,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.search),
+                  tooltip: 'Search',
+                  onPressed: _onSearchPress,
+                )
+              ],
             ),
             Expanded(
               child: ListView(shrinkWrap: true, children: divided),
