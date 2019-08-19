@@ -26,7 +26,15 @@
                 android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.VIEW" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.actions.SEARCH_ACTION" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.VOICE" />
             </intent-filter>
         </activity>
     </application>

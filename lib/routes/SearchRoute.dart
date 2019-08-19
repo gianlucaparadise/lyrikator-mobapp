@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:lyrikator/helpers/Secrets.dart';
 import 'package:lyrikator/models/MusicxmatchResponse.dart';
@@ -13,10 +14,28 @@ class SearchRoute extends StatefulWidget {
 }
 
 class SearchRouteState extends State<SearchRoute> {
+  static const platform = const MethodChannel('app.channel.shared.data');
+
   final _biggerFont = const TextStyle(fontSize: 18.0);
   List<Track> trackList = [];
 
   final _searchEditController = TextEditingController();
+
+  @override
+  initState() {
+    super.initState();
+    _getSavedSearchQuery();
+  }
+
+  Future<String> _getSavedSearchQuery() async {
+    String searchQuery = await platform.invokeMethod("getSavedSearchQuery");
+    if (searchQuery != null) {
+      _searchEditController.text = searchQuery;
+      _onSearchPress();
+      return searchQuery;
+    }
+    return null;
+  }
 
   _onSearchPress() {
     var query = _searchEditController.text;
@@ -64,7 +83,7 @@ class SearchRouteState extends State<SearchRoute> {
   @override
   Widget build(BuildContext context) {
     final Iterable<ListTile> tiles = trackList.map(
-      (Track track) {
+          (Track track) {
         return ListTile(
           title: Text(
             track.trackName,
