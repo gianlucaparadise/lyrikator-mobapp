@@ -13,7 +13,7 @@ class SearchRoute extends StatefulWidget {
   SearchRouteState createState() => SearchRouteState();
 }
 
-class SearchRouteState extends State<SearchRoute> {
+class SearchRouteState extends State<SearchRoute> with WidgetsBindingObserver {
   static const platform = const MethodChannel('app.channel.shared.data');
 
   final _biggerFont = const TextStyle(fontSize: 18.0);
@@ -24,7 +24,30 @@ class SearchRouteState extends State<SearchRoute> {
   @override
   initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // This lifecycle callback is called when your app is closed (not in background)
     _getSavedSearchQuery();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print("state: $state");
+    switch(state) {
+      case AppLifecycleState.resumed:
+        // This lifecycle callback is called when your app is restored from background
+        _getSavedSearchQuery();
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.suspending:
+        break;
+    }
   }
 
   Future<String> _getSavedSearchQuery() async {
