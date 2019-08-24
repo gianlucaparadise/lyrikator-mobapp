@@ -4,9 +4,14 @@ import 'package:flutter/services.dart' show rootBundle;
 
 class Secrets {
   final String musicxmatchApiKey;
-  Secrets({this.musicxmatchApiKey = ""});
+  final String geniusAccessToken;
+
+  Secrets({this.musicxmatchApiKey = "", this.geniusAccessToken = ""});
   factory Secrets.fromJson(Map<String, dynamic> jsonMap) {
-    return new Secrets(musicxmatchApiKey: jsonMap["musicxmatch-api-key"]);
+    return new Secrets(
+      musicxmatchApiKey: jsonMap["musicxmatch-api-key"],
+      geniusAccessToken: jsonMap["genius-access-token"],
+    );
   }
 }
 
