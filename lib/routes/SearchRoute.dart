@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lyrikator/helpers/ConnectionHelper.dart';
-import 'package:lyrikator/models/Track.dart';
+import 'package:lyrikator/models/genius/GeniusResponse.dart';
 
 class SearchRoute extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class SearchRouteState extends State<SearchRoute> with WidgetsBindingObserver {
   static const platform = const MethodChannel('app.channel.shared.data');
 
   final _biggerFont = const TextStyle(fontSize: 18.0);
-  List<Track> trackList = [];
+  List<GeniusHitResult> trackList = [];
 
   final _searchEditController = TextEditingController();
 
@@ -61,29 +61,24 @@ class SearchRouteState extends State<SearchRoute> with WidgetsBindingObserver {
   }
 
   _onSubmitted(String text) async {
-    var response = await ConnectionHelper.fetchTrack(text);
-
-    var sortedTrackList = response.message.body.trackList;
-    sortedTrackList
-        .sort((t1, t2) => t2.numFavourite.compareTo(t1.numFavourite));
+    var body = await ConnectionHelper.searchTrackOnGenius(text);
 
     setState(() {
-      trackList = sortedTrackList;
+      trackList = body.response.hits;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final Iterable<ListTile> tiles = trackList.map(
-          (Track track) {
+          (GeniusHitResult hit) {
         return ListTile(
           title: Text(
-            track.trackName,
+            hit.result.title,
             style: _biggerFont,
           ),
           subtitle: Text(
-            'Author: ${track.artistName}\nFavorite: ${track
-                .numFavourite} Track Rating: ${track.trackRating}',
+            'Author: ${hit.result.primaryArtist.name}',
           ),
           isThreeLine: true,
         );

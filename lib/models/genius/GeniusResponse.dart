@@ -48,16 +48,16 @@ class GeniusHitResult {
 class GeniusSearchResult {
   int id;
   String title;
-  GeniusArtist primary_artist;
+  GeniusArtist primaryArtist;
 
   GeniusSearchResult(
-      {this.id, this.title, this.primary_artist});
+      {this.id, this.title, this.primaryArtist});
 
   factory GeniusSearchResult.fromJson(Map<String, dynamic> json) {
     return GeniusSearchResult(
       id: json['id'],
       title: json['title'],
-      primary_artist: GeniusArtist.fromJson(json['primary_artist']),
+      primaryArtist: GeniusArtist.fromJson(json['primary_artist']),
     );
   }
 }
